@@ -9,6 +9,7 @@ var through = require('through2'),
 module.exports = function(options) {
   options = options || {};
   options.filename = options.filename || "client.js";
+  options.location = options.location || ".";
 
   function createFile(name, content) {
     return new gutil.File({
@@ -27,10 +28,12 @@ module.exports = function(options) {
     }
 
     if (file.isBuffer()) {
-      ramlParser.load(file.contents).then(function (raml) {
+      ramlParser.load(file.contents, options.location).then(function (raml) {
         var generator = jsGenerator(raml);
         var generatedClient = createFile(options.filename, generator.files['index.js']);
         callback(null, generatedClient);
+      }, function(error) {
+        console.error('Parsing error: ' + error);
       });
     }
   });
